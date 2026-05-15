@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBRC Flyer Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1a4fa0 0%, #0d2d5f 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #1a4fa0;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #d32f2f;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #1a4fa0;
+            box-shadow: 0 0 0 3px rgba(26, 79, 160, 0.1);
+        }
+
+        .section-title {
+            color: #1a4fa0;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 2px dashed #1a4fa0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background-color: rgba(26, 79, 160, 0.05);
+        }
+
+        .file-input-label.filled {
+            border-color: #4caf50;
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+
+        .file-name {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit {
+            background: #1a4fa0;
+            color: white;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #0d2d5f;
+            box-shadow: 0 4px 12px rgba(26, 79, 160, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e8e8e8;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 6px;
+            margin-top: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status.show {
+            display: flex;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .status.loading {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .url-input-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .form-section {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+        }
+
+        .form-section .section-title {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BBRC Flyer Generator</h1>
+            <p>Create personalized property owner mailers in minutes</p>
+        </div>
+
+        <form id="flyerForm" enctype="multipart/form-data">
+            <!-- Agent Information -->
+            <div class="form-section">
+                <h3 class="section-title">Agent Information</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="agent_name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="agent_name" name="agent_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_title">Title</label>
+                        <input type="text" id="agent_title" name="agent_title" value="Commercial Salesman">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="agent_phone">Phone <span class="required">*</span></label>
+                        <input type="tel" id="agent_phone" name="agent_phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agent_email">Email <span class="required">*</span></label>
+                        <input type="email" id="agent_email" name="agent_email" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media & QR Codes -->
+            <div class="form-section">
+                <h3 class="section-title">Social Media (Optional)</h3>
+                <p style="color: #666; font-size: 13px; margin-bottom: 16px;">Enter your profile URLs to auto-generate QR codes for your flyers</p>
+
+                <div class="form-group">
+                    <label for="instagram_url">Instagram Profile URL</label>
+                    <input type="text" id="instagram_url" name="instagram_url" placeholder="https://instagram.com/yourprofile">
+                    <div class="url-input-hint">Example: https://instagram.com/your_handle</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook_url">Facebook Profile URL</label>
+                    <input type="text" id="facebook_url" name="facebook_url" placeholder="https://facebook.com/yourprofile">
+                    <div class="url-input-hint">Example: https://facebook.com/your_name</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="linkedin_url">LinkedIn Profile URL</label>
+                    <input type="text" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/yourprofile">
+                    <div class="url-input-hint">Example: https://linkedin.com/in/your-name</div>
+                </div>
+            </div>
+
+            <!-- Files -->
+            <div class="form-section">
+                <h3 class="section-title">Files</h3>
+
+                <div class="form-group">
+                    <label for="headshot">Headshot (JPG/PNG)</label>
+                    <div class="file-input-wrapper">
+                        <label for="headshot" class="file-input-label" id="headshotLabel">
+                            <span>Choose file...</span>
+                            <span class="file-name" id="headshotName"></span>
+                        </label>
+                        <input type="file" id="headshot" name="headshot" accept="image/jpeg,image/png">
+                    </div>
+                    <div class="helper-text">Your professional photo will appear on each flyer</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="property_list">Property List <span class="required">*</span></label>
+                    <div class="file-input-wrapper">
+                        <label for="property_list" class="file-input-label" id="propertyListLabel">
+                            <span>Choose file...</span>
+                            <span class="file-name" id="propertyListName"></span>
+                        </label>
+                        <input type="file" id="property_list" name="property_list" accept=".xlsx,.xls" required>
+                    </div>
+                    <div class="helper-text">Excel file with parcel data (same format as Marketing_List__Final_.xlsx)</div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    Generate Flyers
+                </button>
+                <button type="reset" class="btn-reset" id="resetBtn">
+                    Clear Form
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="status" id="status">
+                <span class="spinner" id="statusSpinner"></span>
+                <span id="statusMessage"></span>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('flyerForm');
+        const headshotInput = document.getElementById('headshot');
+        const propertyListInput = document.getElementById('property_list');
+        const headshotLabel = document.getElementById('headshotLabel');
+        const propertyListLabel = document.getElementById('propertyListLabel');
+        const headshotName = document.getElementById('headshotName');
+        const propertyListName = document.getElementById('propertyListName');
+        const statusDiv = document.getElementById('status');
+        const statusMessage = document.getElementById('statusMessage');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // File input display names
+        headshotInput.addEventListener('change', () => {
+            if (headshotInput.files.length) {
+                headshotName.textContent = headshotInput.files[0].name;
+                headshotLabel.classList.add('filled');
+            } else {
+                headshotName.textContent = '';
+                headshotLabel.classList.remove('filled');
+            }
+        });
+
+        propertyListInput.addEventListener('change', () => {
+            if (propertyListInput.files.length) {
+                propertyListName.textContent = propertyListInput.files[0].name;
+                propertyListLabel.classList.add('filled');
+            } else {
+                propertyListName.textContent = '';
+                propertyListLabel.classList.remove('filled');
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate
+            if (!form.checkValidity()) {
+                showStatus('Please fill out all required fields', 'error');
+                return;
+            }
+
+            if (!propertyListInput.files.length) {
+                showStatus('Please select a property list file', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            showStatus('Generating your flyers...', 'loading');
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'An error occurred');
+                }
+
+                // Download the zip
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `bbrc_flyers_${new Date().getTime()}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showStatus('✓ Flyers generated and downloaded successfully!', 'success');
+                setTimeout(() => statusDiv.classList.remove('show'), 5000);
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusDiv.className = `status show ${type}`;
+            if (type === 'loading') {
+                document.getElementById('statusSpinner').style.display = 'inline-block';
+            } else {
+                document.getElementById('statusSpinner').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
