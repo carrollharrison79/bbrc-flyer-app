@@ -380,28 +380,16 @@
 
             <!-- Files -->
             <div class="form-section">
-                <h3 class="section-title">Files</h3>
+                <h3 class="section-title">Property List</h3>
 
                 <div class="form-group">
-                    <label for="headshot">Headshot (JPG/PNG)</label>
-                    <div class="file-input-wrapper">
-                        <label for="headshot" class="file-input-label" id="headshotLabel">
-                            <span>Choose file...</span>
-                            <span class="file-name" id="headshotName"></span>
-                        </label>
-                        <input type="file" id="headshot" name="headshot" accept="image/jpeg,image/png">
-                    </div>
-                    <div class="helper-text">Your professional photo will appear on each flyer</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="property_list">Property List <span class="required">*</span></label>
+                    <label for="property_list">Upload Excel File <span class="required">*</span></label>
                     <div class="file-input-wrapper">
                         <label for="property_list" class="file-input-label" id="propertyListLabel">
                             <span>Choose file...</span>
                             <span class="file-name" id="propertyListName"></span>
                         </label>
-                        <input type="file" id="property_list" name="property_list" accept=".xlsx,.xls" required>
+                        <input type="file" id="property_list" name="property_list" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required>
                     </div>
                     <div class="helper-text">Excel file with parcel data (same format as Marketing_List__Final_.xlsx)</div>
                 </div>
