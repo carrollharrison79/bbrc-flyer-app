@@ -1,0 +1,37 @@
+{
+  "agents": [
+    {
+      "id": "harrison",
+      "name": "Harrison Carroll",
+      "title": "Commercial Salesman",
+      "phone": "205-534-2628",
+      "email": "harrison@billyboydrealty.com",
+      "instagram": "https://www.instagram.com/harrisoncarroll_/",
+      "facebook": "https://www.facebook.com/harrison.carroll.2025/",
+      "linkedin": "https://www.linkedin.com/in/harrison-carrol",
+      "headshot": "harrison_headshot.jpeg"
+    },
+    {
+      "id": "julie",
+      "name": "Julie Boyd Jackson",
+      "title": "Realtor / Builder",
+      "phone": "205-799-3985",
+      "email": "julie@billyboydrealty.com",
+      "instagram": "https://www.instagram.com/julieboyd22/",
+      "facebook": "https://www.facebook.com/julieboyd.jackson",
+      "linkedin": "",
+      "headshot": "julie_headshot.jpeg"
+    },
+    {
+      "id": "alex",
+      "name": "Alexander Boyd Jackson",
+      "title": "Realtor",
+      "phone": "205-242-5839",
+      "email": "alex@billyboydrealty.com",
+      "instagram": "https://www.instagram.com/ajax205/",
+      "facebook": "https://www.facebook.com/alex.jackson.577049",
+      "linkedin": "",
+      "headshot": "alex_headshot.jpeg"
+    }
+  ]
+}

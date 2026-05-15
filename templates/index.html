@@ -255,6 +255,53 @@
             border-top: none;
         }
 
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #1a4fa0;
+            box-shadow: 0 0 0 3px rgba(26, 79, 160, 0.1);
+        }
+
+        .headshot-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            object-fit: cover;
+            display: none;
+            margin: 16px auto;
+        }
+
+        .headshot-preview.show {
+            display: block;
+        }
+
+        .info-display {
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 24px;
@@ -282,54 +329,52 @@
         </div>
 
         <form id="flyerForm" enctype="multipart/form-data">
-            <!-- Agent Information -->
+            <!-- Agent Selection -->
             <div class="form-section">
-                <h3 class="section-title">Agent Information</h3>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="agent_name">Full Name <span class="required">*</span></label>
-                        <input type="text" id="agent_name" name="agent_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="agent_title">Title</label>
-                        <input type="text" id="agent_title" name="agent_title" value="Commercial Salesman">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="agent_phone">Phone <span class="required">*</span></label>
-                        <input type="tel" id="agent_phone" name="agent_phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="agent_email">Email <span class="required">*</span></label>
-                        <input type="email" id="agent_email" name="agent_email" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Social Media & QR Codes -->
-            <div class="form-section">
-                <h3 class="section-title">Social Media (Optional)</h3>
-                <p style="color: #666; font-size: 13px; margin-bottom: 16px;">Enter your profile URLs to auto-generate QR codes for your flyers</p>
+                <h3 class="section-title">Select Your Account</h3>
 
                 <div class="form-group">
-                    <label for="instagram_url">Instagram Profile URL</label>
-                    <input type="text" id="instagram_url" name="instagram_url" placeholder="https://instagram.com/yourprofile">
-                    <div class="url-input-hint">Example: https://instagram.com/your_handle</div>
+                    <label for="agent_select">Agent Name <span class="required">*</span></label>
+                    <select id="agent_select" name="agent_id" required>
+                        <option value="">-- Select an agent --</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="facebook_url">Facebook Profile URL</label>
-                    <input type="text" id="facebook_url" name="facebook_url" placeholder="https://facebook.com/yourprofile">
-                    <div class="url-input-hint">Example: https://facebook.com/your_name</div>
-                </div>
+                <!-- Agent Headshot Preview -->
+                <img id="headshotPreview" class="headshot-preview" alt="Agent headshot">
 
-                <div class="form-group">
-                    <label for="linkedin_url">LinkedIn Profile URL</label>
-                    <input type="text" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/yourprofile">
-                    <div class="url-input-hint">Example: https://linkedin.com/in/your-name</div>
+                <!-- Agent Info Display (Auto-populated) -->
+                <div id="agentInfoDisplay" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <div class="info-display" id="displayName"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <div class="info-display" id="displayTitle"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <div class="info-display" id="displayPhone"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <div class="info-display" id="displayEmail"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>Social Media</label>
+                            <div class="info-display">
+                                <div id="displaySocial"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -382,27 +427,82 @@
 
     <script>
         const form = document.getElementById('flyerForm');
-        const headshotInput = document.getElementById('headshot');
+        const agentSelect = document.getElementById('agent_select');
         const propertyListInput = document.getElementById('property_list');
-        const headshotLabel = document.getElementById('headshotLabel');
         const propertyListLabel = document.getElementById('propertyListLabel');
-        const headshotName = document.getElementById('headshotName');
         const propertyListName = document.getElementById('propertyListName');
         const statusDiv = document.getElementById('status');
         const statusMessage = document.getElementById('statusMessage');
         const submitBtn = document.getElementById('submitBtn');
 
-        // File input display names
-        headshotInput.addEventListener('change', () => {
-            if (headshotInput.files.length) {
-                headshotName.textContent = headshotInput.files[0].name;
-                headshotLabel.classList.add('filled');
+        const headshotPreview = document.getElementById('headshotPreview');
+        const agentInfoDisplay = document.getElementById('agentInfoDisplay');
+        const displayName = document.getElementById('displayName');
+        const displayTitle = document.getElementById('displayTitle');
+        const displayPhone = document.getElementById('displayPhone');
+        const displayEmail = document.getElementById('displayEmail');
+        const displaySocial = document.getElementById('displaySocial');
+
+        let agentsData = {};
+
+        // Load agents on page load
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents');
+                if (!response.ok) throw new Error('Failed to load agents');
+                const data = await response.json();
+                agentsData = data.agents || {};
+
+                // Populate dropdown
+                const agents = Object.values(agentsData);
+                agents.forEach(agent => {
+                    const option = document.createElement('option');
+                    option.value = agent.id;
+                    option.textContent = agent.name;
+                    agentSelect.appendChild(option);
+                });
+            } catch (error) {
+                showStatus(`Error loading agents: ${error.message}`, 'error');
+            }
+        }
+
+        // Handle agent selection
+        agentSelect.addEventListener('change', (e) => {
+            const agentId = e.target.value;
+            if (!agentId) {
+                agentInfoDisplay.style.display = 'none';
+                headshotPreview.classList.remove('show');
+                return;
+            }
+
+            const agent = agentsData[agentId];
+            if (!agent) return;
+
+            // Display agent info
+            displayName.textContent = agent.name;
+            displayTitle.textContent = agent.title;
+            displayPhone.textContent = agent.phone;
+            displayEmail.textContent = agent.email;
+
+            // Display social media
+            const socials = [];
+            if (agent.instagram) socials.push(`Instagram: ${agent.instagram}`);
+            if (agent.facebook) socials.push(`Facebook: ${agent.facebook}`);
+            if (agent.linkedin) socials.push(`LinkedIn: ${agent.linkedin}`);
+            displaySocial.textContent = socials.length ? socials.join(' | ') : 'No social media configured';
+
+            agentInfoDisplay.style.display = 'block';
+
+            // Show headshot preview
+            if (agent.headshot) {
+                headshotPreview.src = `/static/${agent.headshot}`;
+                headshotPreview.classList.add('show');
             } else {
-                headshotName.textContent = '';
-                headshotLabel.classList.remove('filled');
+                headshotPreview.classList.remove('show');
             }
         });
 
+        // File input display name
         propertyListInput.addEventListener('change', () => {
             if (propertyListInput.files.length) {
                 propertyListName.textContent = propertyListInput.files[0].name;
@@ -417,12 +517,13 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Validate
-            if (!form.checkValidity()) {
-                showStatus('Please fill out all required fields', 'error');
+            // Validate agent selection
+            if (!agentSelect.value) {
+                showStatus('Please select an agent', 'error');
                 return;
             }
 
+            // Validate property list
             if (!propertyListInput.files.length) {
                 showStatus('Please select a property list file', 'error');
                 return;
@@ -432,7 +533,10 @@
             showStatus('Generating your flyers...', 'loading');
 
             try {
-                const formData = new FormData(form);
+                const formData = new FormData();
+                formData.append('agent_id', agentSelect.value);
+                formData.append('property_list', propertyListInput.files[0]);
+
                 const response = await fetch('/generate', {
                     method: 'POST',
                     body: formData
@@ -473,6 +577,9 @@
                 document.getElementById('statusSpinner').style.display = 'none';
             }
         }
+
+        // Load agents when page loads
+        loadAgents();
     </script>
 </body>
 </html>

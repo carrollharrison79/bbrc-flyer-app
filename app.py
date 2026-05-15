@@ -6,6 +6,7 @@ Flask backend for personalized property owner flyer generation
 import os
 import re
 import io
+import json
 import tempfile
 import shutil
 import zipfile
@@ -548,6 +549,42 @@ def draw_mailing_panel(c, owner_name, owner_addr_line1, owner_addr_line2):
 
 
 # ────────────────────────────────────────────────────────────────
+# LOAD AGENTS & LOGOS
+# ────────────────────────────────────────────────────────────────
+
+AGENTS_DATA = {}
+COMPANY_LOGO = None
+
+def load_agents():
+    """Load agents from agents.json"""
+    global AGENTS_DATA
+    try:
+        agents_path = os.path.join(os.path.dirname(__file__), 'agents.json')
+        with open(agents_path, 'r') as f:
+            data = json.load(f)
+            AGENTS_DATA = {agent['id']: agent for agent in data.get('agents', [])}
+    except Exception as e:
+        print(f"Error loading agents: {e}")
+
+def load_company_logo():
+    """Load company logo from static folder"""
+    global COMPANY_LOGO
+    try:
+        logo_path = os.path.join(os.path.dirname(__file__), 'static', 'company_logo.png')
+        if os.path.exists(logo_path):
+            img = PILImage.open(logo_path).convert('RGBA')
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            buf.seek(0)
+            COMPANY_LOGO = ImageReader(buf)
+    except Exception as e:
+        print(f"Error loading company logo: {e}")
+
+# Load on startup
+load_agents()
+load_company_logo()
+
+# ────────────────────────────────────────────────────────────────
 # ROUTES
 # ────────────────────────────────────────────────────────────────
 
@@ -557,27 +594,50 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/api/agents")
+def api_agents():
+    """Serve agent data with pre-generated QR codes"""
+    agents_list = []
+    for agent_id, agent in AGENTS_DATA.items():
+        agent_copy = agent.copy()
+        # Generate QR codes and convert to base64 for JSON
+        qr_codes = {}
+        for social, url in [('instagram', agent['instagram']),
+                           ('facebook', agent['facebook']),
+                           ('linkedin', agent['linkedin'])]:
+            if url:
+                qr_img = generate_qr_code(url)
+                # Note: QR codes will be generated fresh on the backend when needed
+                qr_codes[social] = True
+            else:
+                qr_codes[social] = False
+        agent_copy['qr_codes'] = qr_codes
+        agents_list.append(agent_copy)
+    return jsonify({"agents": agents_list})
+
+
 @app.route("/generate", methods=["POST"])
 def generate():
     """Generate flyers and return zip."""
     try:
-        # Extract form data
-        agent_name = request.form.get("agent_name", "").strip()
-        agent_phone = request.form.get("agent_phone", "").strip()
-        agent_email = request.form.get("agent_email", "").strip()
-        agent_title = request.form.get("agent_title", "Commercial Salesman").strip()
-        instagram_url = request.form.get("instagram_url", "").strip()
-        facebook_url = request.form.get("facebook_url", "").strip()
-        linkedin_url = request.form.get("linkedin_url", "").strip()
+        # Extract agent ID from form
+        agent_id = request.form.get("agent_id", "").strip()
 
-        # Validate required fields
-        if not all([agent_name, agent_phone, agent_email]):
-            return jsonify({"error": "Missing required fields"}), 400
+        if not agent_id or agent_id not in AGENTS_DATA:
+            return jsonify({"error": "Invalid or missing agent selection"}), 400
 
-        # Handle file uploads
-        headshot_file = request.files.get("headshot")
+        agent = AGENTS_DATA[agent_id]
+        agent_name = agent['name']
+        agent_phone = agent['phone']
+        agent_email = agent['email']
+        agent_title = agent['title']
+        instagram_url = agent['instagram']
+        facebook_url = agent['facebook']
+        linkedin_url = agent['linkedin']
+        agent_headshot = agent['headshot']
+
+        # Get property list file
         property_list_file = request.files.get("property_list")
-
         if not property_list_file:
             return jsonify({"error": "Property list file required"}), 400
 
@@ -602,9 +662,21 @@ def generate():
 
             df = df[~df['Property Type'].isin(SKIP_TYPES)]
 
+            # Load agent headshot from static folder
+            hs = None
+            headshot_path = os.path.join(os.path.dirname(__file__), 'static', agent_headshot)
+            if os.path.exists(headshot_path):
+                try:
+                    img = PILImage.open(headshot_path)
+                    w, h = img.size
+                    side = min(w, h)
+                    img = img.crop(((w-side)//2, 0, (w-side)//2+side, side)).resize((220, 220), PILImage.LANCZOS)
+                    hs = to_ir(img)
+                except:
+                    pass
+
             # Process images
-            hs = process_headshot(headshot_file) if headshot_file else None
-            lr = None  # Logo would come from static if needed
+            lr = COMPANY_LOGO  # Use loaded company logo
             ig = generate_qr_code(instagram_url) if instagram_url else None
             fb = generate_qr_code(facebook_url) if facebook_url else None
             li = generate_qr_code(linkedin_url) if linkedin_url else None

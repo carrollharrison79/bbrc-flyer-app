@@ -52,6 +52,12 @@ instance/
 # Large files
 *.xlsx
 *.xls
-*.jpeg
-*.jpg
-*.png
+
+# Note: static/ images are committed (required for app)
+# Ignore only loose image files outside static/
+/*.jpeg
+/*.jpg
+/*.png
+/facebook_qr.png
+/instagram_qr.png
+/linkedin_qr.png
