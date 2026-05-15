@@ -648,7 +648,7 @@ def generate():
 
         try:
             # Load property data
-            df = pd.read_excel(property_list_file, sheet_name='Parcel Details', dtype=str).fillna('')
+            df = pd.read_excel(property_list_file, sheet_name='Parcel Details', dtype=str, engine='openpyxl').fillna('')
             df['Owner Name / Entity'] = df['Owner Name / Entity'].replace('', None).ffill()
             df['Owner Address'] = df['Owner Address'].replace('', None).ffill()
             df['Owner Zip'] = df['Owner Zip'].replace('', None).ffill()
